@@ -189,6 +189,8 @@ export function ChatSettingsPanel({
     const [showConfirmClearTools, setShowConfirmClearTools] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [editingAlias, setEditingAlias] = useState(false);
+    const [editingRelationship, setEditingRelationship] = useState(false);
+    const [editingPremise, setEditingPremise] = useState(false);
     const [editingBilingualPrompt, setEditingBilingualPrompt] = useState(false);
     const [editingCSS, setEditingCSS] = useState(false);
     const [showScreenEffects, setShowScreenEffects] = useState(false);

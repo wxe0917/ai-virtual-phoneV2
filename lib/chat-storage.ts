@@ -56,6 +56,8 @@ export type ChatSession = {
     offlineBilingualTranslationPrompt?: string;
     nativeExpandedToolSourceIds?: string[];
     visionImagePromptLimit?: number;
+    userRelationship?: string;
+    premise?: string;
     // Group chat fields
     isGroup?: boolean;
     groupName?: string;
