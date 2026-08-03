@@ -1708,6 +1708,8 @@ function CharArchiveView({
   const [name, setName] = useState(char.name || "");
   const [persona, setPersona] = useState(char.persona || "");
   const [personality, setPersonality] = useState(char.personality || "");
+  const [userRelationship, setUserRelationship] = useState(char.userRelationship || "");
+  const [premise, setPremise] = useState(char.premise || "");
   const [briefPersona, setBriefPersona] = useState(char.briefPersona || "");
   const [briefBusy, setBriefBusy] = useState(false);
   const [briefError, setBriefError] = useState("");
@@ -1766,6 +1768,8 @@ function CharArchiveView({
     if (name !== (char.name || "")) return true;
     if (persona !== (char.persona || "")) return true;
     if (personality !== (char.personality || "")) return true;
+    if (userRelationship !== (char.userRelationship || "")) return true;
+    if (premise !== (char.premise || "")) return true;
     if (briefPersona !== (char.briefPersona || "")) return true;
     if (timeZone !== (char.timeZone || "")) return true;
     if (avatar !== (char.avatar || null)) return true;
@@ -1787,6 +1791,8 @@ function CharArchiveView({
       setName(char.name || "");
       setPersona(char.persona || "");
       setPersonality(char.personality || "");
+      setUserRelationship(char.userRelationship || "");
+      setPremise(char.premise || "");
       setBriefPersona(char.briefPersona || "");
       setBriefError("");
       setTimeZone(char.timeZone || "");
@@ -1828,6 +1834,8 @@ function CharArchiveView({
         name: name.trim() || char.name || "UNNAMED",
         persona,
         personality: personality.trim() || undefined,
+        userRelationship: userRelationship.trim() || undefined,
+        premise: premise.trim() || undefined,
         briefPersona: trimmedBrief || undefined,
         // 简介变动才刷新时间戳；未动则保留原值（供「设定已更新」过期提示判断）
         briefPersonaUpdatedAt: trimmedBrief
