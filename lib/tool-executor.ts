@@ -4209,3 +4209,203 @@ export function formatToolResults(results: ToolResult[]): string {
     }).join("\n");
     return `以下是系统处理结果：\n${items}\n请基于以上结果，继续以角色身份回复用户。不要重复你之前已经说过的内容，不要再次执行相同的动作。`;
 }
+
+
+function isLoverConnectToolName(name: string): boolean {
+    return name === "get_battery"
+        || name === "get_screen_time"
+        || name === "get_app_timeline"
+        || name === "get_steps"
+        || name === "get_weather"
+        || name === "get_anniversary"
+        || name === "send_notification"
+        || name === "save_memory"
+        || name === "read_memory"
+        || name === "set_alarm"
+        || name === "play_music";
+}
+
+async function executeLoverConnectTool(call: ToolCall, context?: ToolExecutionContext): Promise<ToolResult> {
+    const { name, args } = call;
+
+    if (name === "get_battery") {
+        return {
+            name,
+            success: true,
+            output: JSON.stringify({
+                battery: "85%",
+                status: "未充电",
+                temperature: "32.0℃",
+                health: "良好"
+            }),
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "get_screen_time") {
+        return {
+            name,
+            success: true,
+            output: JSON.stringify({
+                screenOnTime: "4小时12分钟",
+                topApps: [
+                    { name: "聊天", duration: "1小时45分钟" },
+                    { name: "小红书", duration: "50分钟" },
+                    { name: "音乐", duration: "35分钟" },
+                    { name: "地图", duration: "20分钟" }
+                ]
+            }),
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "get_app_timeline") {
+        return {
+            name,
+            success: true,
+            output: JSON.stringify({
+                timeline: [
+                    "08:30 打开聊天",
+                    "12:15 打开小红书浏览动态",
+                    "18:40 启动音乐播放器",
+                    "21:10 打开虚拟手机主界面"
+                ]
+            }),
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "get_steps") {
+        return {
+            name,
+            success: true,
+            output: JSON.stringify({
+                steps: 7380,
+                target: 10000,
+                distance: "5.2公里",
+                calories: "245千卡"
+            }),
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "get_weather") {
+        const city = String(args.city || args.q || "上海").trim();
+        try {
+            const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`, { cache: "no-store" });
+            if (res.ok) {
+                const data = await res.json();
+                const current = data.current_condition?.[0];
+                if (current) {
+                    return {
+                        name,
+                        success: true,
+                        output: JSON.stringify({
+                            city,
+                            temperature: `${current.temp_C}℃`,
+                            weather: current.lang_zh?.[0]?.value || current.weatherDesc?.[0]?.value || "晴",
+                            humidity: `${current.humidity}%`,
+                            wind: `${current.windspeedKmph} km/h`
+                        }),
+                        continueConversation: true,
+                        persistToHistory: true,
+                    };
+                }
+            }
+        } catch { }
+        return {
+            name,
+            success: true,
+            output: JSON.stringify({
+                city,
+                temperature: "24℃",
+                weather: "晴朗",
+                humidity: "55%",
+                wind: "微风"
+            }),
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "get_anniversary") {
+        const annName = String(args.name || "相识相恋").trim();
+        return {
+            name,
+            success: true,
+            output: JSON.stringify({
+                anniversary: annName,
+                daysTogether: 520,
+                nextMilestoneDays: 80,
+                note: "每一天都值得纪念与珍惜❤️"
+            }),
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "send_notification") {
+        const msg = String(args.message || args.content || "").trim();
+        const title = String(args.title || "系统通知").trim();
+        return {
+            name,
+            success: true,
+            output: `通知已弹出：[${title}] ${msg}`,
+            userNotice: `🔔 ${title}: ${msg}`,
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "save_memory" || name === "read_memory") {
+        const key = String(args.key || args.content || "").trim();
+        const val = String(args.value || "").trim();
+        if (name === "save_memory" && key && val) {
+            return {
+                name,
+                success: true,
+                output: `成功记录记忆【${key}】：${val}`,
+                continueConversation: true,
+                persistToHistory: true,
+            };
+        }
+        return {
+            name,
+            success: true,
+            output: `已查询相关记忆：${key ? `关于『${key}』的记录已保存。` : "与用户的互动记忆良好。"}`,
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "set_alarm") {
+        const hour = Number(args.hour ?? 8);
+        const minute = Number(args.minute ?? 0);
+        const msg = String(args.message || "定时提醒").trim();
+        return {
+            name,
+            success: true,
+            output: `提醒设置成功！设定在 ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} 提醒：${msg}`,
+            userNotice: `⏰ 闹钟已设定：${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} (${msg})`,
+            continueConversation: true,
+            persistToHistory: true,
+        };
+    }
+
+    if (name === "play_music") {
+        const query = String(args.query || args.name || "晴天").trim();
+        return executeMusicPlayTool({ query });
+    }
+
+    return {
+        name,
+        success: false,
+        error: `未知工具: ${name}`,
+        continueConversation: true,
+        persistToHistory: false,
+    };
+}

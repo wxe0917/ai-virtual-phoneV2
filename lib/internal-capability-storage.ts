@@ -12,6 +12,7 @@ export const SEND_FILE_CAPABILITY_ID = "send_file";
 export const LOCAL_DATA_LIBRARY_CAPABILITY_ID = "local_data_library";
 export const TOOLBOX_MANAGEMENT_CAPABILITY_ID = "toolbox_management";
 export const TIMED_WAKE_CAPABILITY_ID = "timed_wake";
+export const LOVERCONNECT_CAPABILITY_ID = "loverconnect";
 
 export type InternalToolDefinition = {
     name: string;
@@ -93,6 +94,119 @@ const TIMED_WAKE_PARAMETER_SCHEMA = JSON.stringify({
     },
     required: ["delayMinutes", "intent"],
 });
+
+
+const LOVERCONNECT_SUBTOOLS: InternalToolDefinition[] = [
+    {
+        name: "get_battery",
+        description: "获取手机当前电量与充电状态",
+        parameterSchema: JSON.stringify({ type: "object", properties: {} }),
+        usageGuide: "获取当前虚拟手机剩余电量百分比、电池状态与温度。",
+    },
+    {
+        name: "get_screen_time",
+        description: "获取今日手机屏幕使用时间与热门 App 使用时长",
+        parameterSchema: JSON.stringify({ type: "object", properties: {} }),
+        usageGuide: "获取今日手机屏幕亮屏时长和各大应用的使用情况。",
+    },
+    {
+        name: "get_app_timeline",
+        description: "获取今日手机 App 使用时间线记录",
+        parameterSchema: JSON.stringify({ type: "object", properties: {} }),
+        usageGuide: "获取今日手机打开与使用各个 App 的时间线记录。",
+    },
+    {
+        name: "get_steps",
+        description: "获取手机记录的今日运动步数",
+        parameterSchema: JSON.stringify({ type: "object", properties: {} }),
+        usageGuide: "获取今日运动累计步数、公里数与消耗热量。",
+    },
+    {
+        name: "get_weather",
+        description: "查询指定城市的实时天气预报与气温",
+        parameterSchema: JSON.stringify({
+            type: "object",
+            properties: {
+                city: { type: "string", description: "城市名称，如『北京』、『上海』、『广州』" },
+            },
+        }),
+        usageGuide: "查询城市实时天气情况、温度与天气状况。",
+    },
+    {
+        name: "get_anniversary",
+        description: "查询纪念日累计天数或倒计时",
+        parameterSchema: JSON.stringify({
+            type: "object",
+            properties: {
+                name: { type: "string", description: "纪念日名称，如『相识』、『恋爱』、『生日』" },
+            },
+        }),
+        usageGuide: "查询相识相恋纪念日天数或未来纪念日倒计时。",
+    },
+    {
+        name: "send_notification",
+        description: "在手机上发送一条系统弹窗通知消息",
+        parameterSchema: JSON.stringify({
+            type: "object",
+            properties: {
+                message: { type: "string", description: "通知内容" },
+                title: { type: "string", description: "通知标题" },
+            },
+            required: ["message"],
+        }),
+        usageGuide: "在手机顶部弹出系统级别通知。",
+    },
+    {
+        name: "save_memory",
+        description: "记录一条与用户的关键记忆",
+        parameterSchema: JSON.stringify({
+            type: "object",
+            properties: {
+                key: { type: "string", description: "记忆主题或关键字" },
+                value: { type: "string", description: "记忆具体内容" },
+            },
+            required: ["key", "value"],
+        }),
+        usageGuide: "将长期有效的重要事实记忆保存到记忆库。",
+    },
+    {
+        name: "read_memory",
+        description: "查询或读取记录的关键记忆信息",
+        parameterSchema: JSON.stringify({
+            type: "object",
+            properties: {
+                key: { type: "string", description: "要查询的记忆关键字（为空时返回全部记忆）" },
+            },
+        }),
+        usageGuide: "读取之前保存到记忆库的事实记忆。",
+    },
+    {
+        name: "set_alarm",
+        description: "设置一个未来的时间提醒闹钟",
+        parameterSchema: JSON.stringify({
+            type: "object",
+            properties: {
+                hour: { type: "number", description: "小时 (0-23)" },
+                minute: { type: "number", description: "分钟 (0-59)" },
+                message: { type: "string", description: "提醒事项内容" },
+            },
+            required: ["hour", "minute"],
+        }),
+        usageGuide: "定时在指定时刻提醒用户或主动发起联系。",
+    },
+    {
+        name: "play_music",
+        description: "点歌并在线播放音乐",
+        parameterSchema: JSON.stringify({
+            type: "object",
+            properties: {
+                query: { type: "string", description: "歌名或歌手，如『晴天』" },
+            },
+            required: ["query"],
+        }),
+        usageGuide: "在内置音乐播放器中搜索并播放指定歌曲。",
+    },
+];
 
 const TIMED_WAKE_USAGE_GUIDE = [
     "以下是你获取指令的返回结果：",
@@ -1150,6 +1264,15 @@ const TOOLBOX_MANAGEMENT_USAGE_GUIDE = [
 ].join("\n");
 
 const BUILTIN_INTERNAL_CAPABILITIES: InternalCapabilityConfig[] = [
+    {
+        id: LOVERCONNECT_CAPABILITY_ID,
+        name: "LoverConnect 伴侣工具包",
+        description: "提供电量查询、城市天气、纪念日累计、今日步数、屏幕时长、系统通知、播放音乐与记忆读写等恋人小工具。",
+        enabled: true,
+        mode: "auto",
+        createdAt: 0,
+        updatedAt: 0,
+    },
     {
         id: MEMORY_WRITE_CAPABILITY_ID,
         name: "写入记忆",
