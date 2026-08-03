@@ -290,6 +290,27 @@ export function ChatSettingsPanel({
     const characters = loadCharacters();
     const character = characters.find(c => c.id === session.contactId);
 
+    const [relationshipInput, setRelationshipInput] = useState(session.userRelationship || character?.userRelationship || "");
+    const [premiseInput, setPremiseInput] = useState(session.premise || character?.premise || "");
+
+    const handleSaveRelationshipAndPremise = (updates: { userRelationship?: string; premise?: string }) => {
+        updateSession(updates);
+        if (character) {
+            const allChars = loadCharacters();
+            const updatedChars = allChars.map(c => {
+                if (c.id === character.id) {
+                    return {
+                        ...c,
+                        ...updates,
+                        updatedAt: new Date().toISOString(),
+                    };
+                }
+                return c;
+            });
+            saveCharacters(updatedChars);
+        }
+    };
+
     const characterName = session.isGroup
         ? (groupName || session.groupName || "群聊")
         : (alias || character?.name || `User_${session.contactId.slice(-4)}`);
@@ -609,6 +630,38 @@ export function ChatSettingsPanel({
                         <ChatInfoIcon icon={Search} color={BINDING_ACCENTS.api} />
                         <div className="menu-label-group"><span className="menu-label">查找聊天记录</span></div>
                         <div className="menu-right"><ChevronRight size={16} /></div>
+                    </button>
+                    <button className="menu-item" onClick={() => {
+                        setRelationshipInput(session.userRelationship || character?.userRelationship || "");
+                        setEditingRelationship(true);
+                    }}>
+                        <ChatInfoIcon icon={Users} color={BINDING_ACCENTS.preset} />
+                        <div className="menu-label-group">
+                            <span className="menu-label">与我的关系</span>
+                            <span className="menu-desc">设置与你的角色关系（如：青梅竹马 / 上司）</span>
+                        </div>
+                        <div className="menu-right shrink-0 max-w-[130px] overflow-hidden">
+                            <span className="menu-desc mr-1 truncate block">
+                                {session.userRelationship || character?.userRelationship || "未设置"}
+                            </span>
+                            <ChevronRight size={16} />
+                        </div>
+                    </button>
+                    <button className="menu-item" onClick={() => {
+                        setPremiseInput(session.premise || character?.premise || "");
+                        setEditingPremise(true);
+                    }}>
+                        <ChatInfoIcon icon={Sparkles} color={BINDING_ACCENTS.voice} />
+                        <div className="menu-label-group">
+                            <span className="menu-label">前提要领 / 剧情主线</span>
+                            <span className="menu-desc">控制冷战/破冰状态与剧情走向</span>
+                        </div>
+                        <div className="menu-right shrink-0 max-w-[130px] overflow-hidden">
+                            <span className="menu-desc mr-1 truncate block">
+                                {session.premise || character?.premise || "未设置"}
+                            </span>
+                            <ChevronRight size={16} />
+                        </div>
                     </button>
                 </div>
 
@@ -1006,6 +1059,68 @@ export function ChatSettingsPanel({
                             </div>
                         )}
                         <button className="ui-btn ui-btn-ghost w-full" onClick={() => setShowInvitePicker(false)}>取消</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: Edit User Relationship */}
+            {editingRelationship && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-sm rounded-2xl bg-[var(--c-page-body-bg)] p-5 shadow-2xl border border-[var(--c-card-border)] flex flex-col gap-4">
+                        <div className="ts-17 font-semibold text-center text-[var(--c-text)]">与我的关系</div>
+                        <p className="ts-12 text-[var(--c-text-muted)] leading-relaxed">
+                            设置角色与你的固有角色关系（如：青梅竹马、上司与下属、搭档、情侣等）。
+                        </p>
+                        <Input
+                            value={relationshipInput}
+                            onChange={e => setRelationshipInput(e.target.value)}
+                            placeholder="例如：青梅竹马 / 上司与下属"
+                            autoFocus
+                        />
+                        <div className="flex gap-2">
+                            <button onClick={() => setEditingRelationship(false)} className="ui-btn ui-btn-ghost flex-1">取消</button>
+                            <button
+                                onClick={() => {
+                                    handleSaveRelationshipAndPremise({ userRelationship: relationshipInput.trim() || undefined });
+                                    setEditingRelationship(false);
+                                }}
+                                className="ui-btn ui-btn-action flex-1"
+                            >
+                                保存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: Edit Story Premise */}
+            {editingPremise && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-sm rounded-2xl bg-[var(--c-page-body-bg)] p-5 shadow-2xl border border-[var(--c-card-border)] flex flex-col gap-4">
+                        <div className="ts-17 font-semibold text-center text-[var(--c-text)]">前提要领 / 剧情主线</div>
+                        <p className="ts-12 text-[var(--c-text-muted)] leading-relaxed">
+                            设定当前对话的核心故事背景与行为要求。AI 将强制读取此要求，并在后续回复中带入相应的语气和剧情发展（例如：两人刚吵完架冷战，正想找机会破冰）。
+                        </p>
+                        <textarea
+                            value={premiseInput}
+                            onChange={e => setPremiseInput(e.target.value)}
+                            placeholder="例如：你和用户刚才大吵了一架，冷战了两个小时。现在你心里后悔但拉不下脸，想找机会破冰搭话..."
+                            rows={4}
+                            className="ui-textarea w-full"
+                            autoFocus
+                        />
+                        <div className="flex gap-2">
+                            <button onClick={() => setEditingPremise(false)} className="ui-btn ui-btn-ghost flex-1">取消</button>
+                            <button
+                                onClick={() => {
+                                    handleSaveRelationshipAndPremise({ premise: premiseInput.trim() || undefined });
+                                    setEditingPremise(false);
+                                }}
+                                className="ui-btn ui-btn-action flex-1"
+                            >
+                                保存
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
